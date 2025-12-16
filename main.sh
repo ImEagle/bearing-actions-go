@@ -95,6 +95,14 @@ if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
     echo "output-file=$OUTPUT_PATH" >> "$GITHUB_OUTPUT"
 fi
 
+# Debug: show upload configuration
+echo ""
+echo "Upload configuration:"
+echo "  Upload URL: ${INPUT_UPLOAD_URL:-(not set)}"
+echo "  Token: ${INPUT_TOKEN:+[provided]}"
+echo "  System Element ID: ${INPUT_SYSTEM_ELEMENT_ID:-(not set)}"
+echo "  Dry-run: $INPUT_DRY_RUN"
+
 # Get git info for upload
 get_git_info() {
     local commit_id=""
@@ -118,7 +126,11 @@ get_git_info() {
 }
 
 # Handle upload
-if [[ -n "$INPUT_UPLOAD_URL" ]]; then
+if [[ -z "$INPUT_UPLOAD_URL" ]]; then
+    echo ""
+    echo "Skipping upload: No upload URL provided."
+    echo "To enable upload, set 'upload-url' input or DC_UPLOAD_URL environment variable."
+elif [[ -n "$INPUT_UPLOAD_URL" ]]; then
     echo ""
     echo "Preparing upload..."
 

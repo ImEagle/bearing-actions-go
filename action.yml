@@ -86,4 +86,8 @@ runs:
         INPUT_TOKEN: ${{ inputs.token }}
         INPUT_SYSTEM_ELEMENT_ID: ${{ inputs.system-element-id }}
         INPUT_DRY_RUN: ${{ inputs.dry-run }}
+        # Pass through DC_* env vars from workflow for fallback
+        DC_UPLOAD_URL: ${{ env.DC_UPLOAD_URL }}
+        DC_TOKEN: ${{ env.DC_TOKEN }}
+        DC_SYSTEM_ELEMENT_ID: ${{ env.DC_SYSTEM_ELEMENT_ID }}
       run: bash ${{ github.action_path }}/main.sh
