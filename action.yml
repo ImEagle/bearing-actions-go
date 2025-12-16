@@ -46,7 +46,7 @@ inputs:
   dry-run:
     description: 'If true, print the curl command instead of executing it'
     required: false
-    default: 'true'
+    default: 'false'
 
 outputs:
   output-file:
