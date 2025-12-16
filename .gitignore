@@ -11,6 +11,7 @@
 # Built binary (committed separately or built at action runtime)
 bearing-go
 umljson
+dist/
 
 # Test binary, built with `go test -c`
 *.test
