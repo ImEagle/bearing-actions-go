@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# Built binary (committed separately or built at action runtime)
+bearing-go
+
 # Test binary, built with `go test -c`
 *.test
 

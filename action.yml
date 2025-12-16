@@ -1,0 +1,89 @@
+name: 'Bearing UML Analyzer for Go'
+description: 'Analyzes Go code and generates UML structure in JSON format, then uploads to a specified endpoint'
+author: 'Your Name'
+
+branding:
+  icon: 'code'
+  color: 'green'
+
+inputs:
+  path:
+    description: 'Path to the Go project to analyze'
+    required: false
+    default: '.'
+  output:
+    description: 'Output filename for the generated JSON'
+    required: false
+    default: 'uml.json'
+  project-name:
+    description: 'Project name to store in JSON'
+    required: false
+  exclude:
+    description: 'Comma-separated directory names to ignore'
+    required: false
+    default: '.git,.idea,.vscode,node_modules,testdata,vendor'
+  include-tests:
+    description: 'Include *_test.go files in analysis'
+    required: false
+    default: 'false'
+  include-generated:
+    description: 'Include files with "Code generated" headers'
+    required: false
+    default: 'false'
+  pretty:
+    description: 'Pretty-print the JSON output (indent with 2 spaces)'
+    required: false
+    default: 'true'
+  upload-url:
+    description: 'URL to upload the generated file (overrides DC_UPLOAD_URL env var)'
+    required: false
+  token:
+    description: 'Authentication token for upload (overrides DC_TOKEN env var)'
+    required: false
+  system-element-id:
+    description: 'System element ID for upload (overrides DC_SYSTEM_ELEMENT_ID env var)'
+    required: false
+  dry-run:
+    description: 'If true, print the curl command instead of executing it'
+    required: false
+    default: 'true'
+
+outputs:
+  output-file:
+    description: 'Path to the generated JSON file'
+    value: ${{ steps.run-bearing.outputs.output-file }}
+  curl-command:
+    description: 'The curl command that would be executed (shown in dry-run mode)'
+    value: ${{ steps.run-bearing.outputs.curl-command }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+        cache: false
+
+    - name: Build Bearing Analyzer
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        go build -o bearing-go ./cmd/umljson
+
+    - name: Run Bearing Analyzer
+      id: run-bearing
+      shell: bash
+      env:
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_OUTPUT: ${{ inputs.output }}
+        INPUT_PROJECT_NAME: ${{ inputs.project-name }}
+        INPUT_EXCLUDE: ${{ inputs.exclude }}
+        INPUT_INCLUDE_TESTS: ${{ inputs.include-tests }}
+        INPUT_INCLUDE_GENERATED: ${{ inputs.include-generated }}
+        INPUT_PRETTY: ${{ inputs.pretty }}
+        INPUT_UPLOAD_URL: ${{ inputs.upload-url }}
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_SYSTEM_ELEMENT_ID: ${{ inputs.system-element-id }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+      run: bash ${{ github.action_path }}/main.sh
