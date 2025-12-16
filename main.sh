@@ -138,32 +138,21 @@ elif [[ -n "$INPUT_UPLOAD_URL" ]]; then
     COMMIT_ID="${GIT_INFO%%|*}"
     BRANCH="${GIT_INFO##*|}"
 
+    # Build payload JSON (matching Python implementation)
+    PAYLOAD=$(cat <<EOF
+{"commit_id":"${COMMIT_ID}","branch":"${BRANCH}","system_element_id":"${INPUT_SYSTEM_ELEMENT_ID}","source_format":"go_json"}
+EOF
+)
+
     # Build curl command
     CURL_CMD="curl -X POST"
-    CURL_CMD+=" -H 'Accept: application/json'"
 
     if [[ -n "$INPUT_TOKEN" ]]; then
         CURL_CMD+=" -H 'Authorization: Bearer $INPUT_TOKEN'"
     fi
 
-    CURL_CMD+=" -F 'file=@$OUTPUT_PATH;type=application/json'"
-
-    if [[ -n "$INPUT_PROJECT_NAME" ]]; then
-        CURL_CMD+=" -F 'projectName=$INPUT_PROJECT_NAME'"
-    fi
-
-    if [[ -n "$INPUT_SYSTEM_ELEMENT_ID" ]]; then
-        CURL_CMD+=" -F 'systemElementId=$INPUT_SYSTEM_ELEMENT_ID'"
-    fi
-
-    if [[ -n "$COMMIT_ID" ]]; then
-        CURL_CMD+=" -F 'commitId=$COMMIT_ID'"
-    fi
-
-    if [[ -n "$BRANCH" ]]; then
-        CURL_CMD+=" -F 'branch=$BRANCH'"
-    fi
-
+    CURL_CMD+=" -F 'file=@$OUTPUT_PATH'"
+    CURL_CMD+=" -F 'payload=$PAYLOAD'"
     CURL_CMD+=" '$INPUT_UPLOAD_URL'"
 
     if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
