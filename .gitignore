@@ -10,6 +10,7 @@
 
 # Built binary (committed separately or built at action runtime)
 bearing-go
+umljson
 
 # Test binary, built with `go test -c`
 *.test

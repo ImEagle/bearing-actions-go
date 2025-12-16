@@ -1,0 +1,70 @@
+name: Main Branch Merge
+
+# Trigger this workflow when code is pushed/merged to the main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # Job to build, test, and prepare artifacts after merge
+  post-merge:
+    name: Post-Merge - Build & Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Setup Go environment with version 1.21
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      # Download and verify dependencies
+      - name: Download dependencies
+        run: go mod download
+
+      # Verify dependencies are up to date
+      - name: Verify dependencies
+        run: go mod verify
+
+      # Run go vet for static analysis
+      - name: Run go vet
+        run: go vet ./...
+
+      # Run tests with coverage
+      - name: Run tests
+        run: go test -v -race -coverprofile=coverage.out ./...
+
+      # Build the application
+      - name: Build application
+        run: |
+          mkdir -p dist
+          go build -v -o dist/bearing-go ./cmd/umljson
+
+      # Upload build artifact for potential deployment
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bearing-go-${{ github.sha }}
+          path: dist/bearing-go
+          retention-days: 30
+
+      # Display test coverage summary
+      - name: Display coverage
+        run: go tool cover -func=coverage.out
+
+      # Optional: Create a release tag on successful build
+      # This step is commented out but can be enabled if automatic tagging is desired
+      # - name: Create release tag
+      #   if: github.ref == 'refs/heads/main'
+      #   run: |
+      #     git config user.name "GitHub Actions"
+      #     git config user.email "actions@github.com"
+      #     VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+      #     git tag -a $VERSION -m "Automated release $VERSION"
+      #     git push origin $VERSION

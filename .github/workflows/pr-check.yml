@@ -1,0 +1,57 @@
+name: Pull Request Checks
+
+# Trigger this workflow when a pull request is opened
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  # Job to lint, test, and build the Go application
+  pr-checks:
+    name: PR Checks - Lint, Test & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Setup Go environment with version 1.21
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      # Download and verify dependencies
+      - name: Download dependencies
+        run: go mod download
+
+      # Verify dependencies are up to date
+      - name: Verify dependencies
+        run: go mod verify
+
+      # Run go vet for static analysis
+      - name: Run go vet
+        run: go vet ./...
+
+      # Run go fmt to check code formatting
+      - name: Check code formatting
+        run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "The following files are not formatted correctly:"
+            gofmt -l .
+            exit 1
+          fi
+
+      # Run tests with coverage
+      - name: Run tests
+        run: go test -v -race -coverprofile=coverage.out ./...
+
+      # Build the application to ensure it compiles
+      - name: Build application
+        run: go build -v ./cmd/umljson
+
+      # Display test coverage summary
+      - name: Display coverage
+        run: go tool cover -func=coverage.out
